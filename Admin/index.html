@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <link rel="icon" type="image/png" sizes="64x64" href="../assets/viettel-v-favicon.png?v=2">
+  <link rel="icon" type="image/png" sizes="64x64" href="/ViettelPost/assets/viettel-v-favicon.png?v=3">
   <title>Admin | Viettel Post Recruitment Desk</title>
-  <script src="../config.js"></script>
+  <script src="/ViettelPost/config.js?v=20261024-5" onerror="window.__VPR_CONFIG_LOAD_ERROR__=true"></script>
   <style>
     :root{color-scheme:light;--red:#df202d;--ink:#242830;--muted:#66707b;--line:#e4e7eb;--paper:#f4f5f7}
     *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;min-height:100%;font:14px/1.6 Arial,Helvetica,sans-serif;color:var(--ink);background:var(--paper)}
@@ -20,11 +20,11 @@
 <body>
   <main id="setupState" class="state">
     <section class="card">
-      <div class="brand"><img class="brand-logo" src="../assets/viettel-post-logo.png?v=2" alt="Viettel Post"><span><strong>RECRUITMENT DESK</strong><small>CAREER PORTAL</small></span></div>
+      <div class="brand"><img class="brand-logo" src="/ViettelPost/assets/viettel-post-logo.png?v=3" alt="Viettel Post"><span><strong>RECRUITMENT DESK</strong><small>CAREER PORTAL</small></span></div>
       <h1>Admin · Quản trị tuyển dụng</h1>
       <p>Đường dẫn quản trị cố định trên GitHub Pages. Giao diện đăng nhập và xử lý dữ liệu được phục vụ bởi Google Apps Script; dữ liệu vận hành lưu trong Google Sheets.</p>
       <div id="missingConfig" class="note" hidden>Chưa cấu hình URL Web App của Google Apps Script. Hãy điền <code>GAS_WEB_APP_URL</code> trong file <code>config.js</code>, lưu lại và publish GitHub Pages.</div>
-      <div class="actions"><a class="button secondary" href="../">← Về trang tuyển dụng</a><a id="retryLink" class="button" href="#" hidden>Thử mở lại</a></div>
+      <div class="actions"><a class="button secondary" href="/ViettelPost/">← Về trang tuyển dụng</a><a id="retryLink" class="button" href="#" hidden>Thử mở lại</a></div>
     </section>
   </main>
   <div id="loadingState" class="loading" role="status" aria-live="polite"><div><div class="spinner"></div><strong>Đang kết nối hệ thống quản trị…</strong><p>Connecting to the secure admin workspace…</p></div></div>
@@ -41,7 +41,14 @@
       const loading=document.getElementById('loadingState');
       let loadTimer;
       function showSetup(){setup.hidden=false;missing.hidden=false;retry.hidden=true;loading.classList.remove('show');frame.style.display='none'}
-      if(!raw){showSetup();return}
+      if(!raw){
+        showSetup();
+        missing.textContent = window.__VPR_CONFIG_LOAD_ERROR__
+          ? 'Không tải được file config.js tại /ViettelPost/config.js. Hãy kiểm tra file đã được commit lên nhánh đang publish GitHub Pages, sau đó tải lại trang bằng Ctrl+F5.'
+          : 'Đã tải config.js nhưng GAS_WEB_APP_URL đang trống. Hãy kiểm tra giá trị trong file config.js, commit thay đổi và tải lại trang bằng Ctrl+F5.';
+        missing.hidden=false;
+        return;
+      }
       let target;
       try{
         target=new URL(raw);
