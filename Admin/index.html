@@ -107,15 +107,58 @@ function setLang(next){lang=next==='en'?'en':'vi';document.documentElement.lang=
 function toast(message,error=false){const el=document.createElement('div');el.className='toast'+(error?' error':'');el.textContent=message;$('#toastHost').appendChild(el);setTimeout(()=>el.remove(),3900)}
 const VPR_PENDING_API=new Map();
 function vprGasApiUrl(){const value=String((window.VPR_CONFIG&&window.VPR_CONFIG.GAS_WEB_APP_URL)||'').trim();try{const u=new URL(value);if(u.protocol!=='https:'||u.hostname!=='script.google.com'||!u.pathname.includes('/macros/s/')||!u.pathname.endsWith('/exec'))throw new Error('Invalid GAS Web App URL');return u.toString()}catch(_){throw new Error(lang==='en'?'The Google Apps Script API URL is invalid. Check config.js.':'URL API Google Apps Script không hợp lệ. Hãy kiểm tra config.js.')}}
-function vprIsGasOrigin(origin){try{const h=new URL(origin).hostname;return h==='script.google.com'||h==='script.googleusercontent.com'||h.endsWith('.script.googleusercontent.com')}catch(_){return false}}
+function vprIsGasOrigin(origin){try{const h=new URL(origin).hostname.toLowerCase();return h==='script.google.com'||/(?:^|[.-])script\.googleusercontent\.com$/.test(h)}catch(_){return false}}
 function vprCleanupRequest(id){const item=VPR_PENDING_API.get(id);if(!item)return;clearTimeout(item.timer);VPR_PENDING_API.delete(id);try{item.form.remove()}catch(_){}try{item.frame.remove()}catch(_){}}
-window.addEventListener('message',function(event){const msg=event.data;if(!msg||msg.channel!=='vpr-admin-api'||typeof msg.requestId!=='string')return;const item=VPR_PENDING_API.get(msg.requestId);if(!item||!vprIsGasOrigin(event.origin))return;const resolve=item.resolve,reject=item.reject;vprCleanupRequest(msg.requestId);if(msg.error)reject(new Error(String(msg.error)));else resolve(msg.result)});
+let vprLastUnexpectedGasOrigin='';
+window.addEventListener('message',function(event){const msg=event.data;if(!msg||msg.channel!=='vpr-admin-api'||typeof msg.requestId!=='string')return;const item=VPR_PENDING_API.get(msg.requestId);if(!item)return;if(!vprIsGasOrigin(event.origin)){vprLastUnexpectedGasOrigin=String(event.origin||'unknown');console.warn('VPR Admin API response ignored: unrecognized response origin',vprLastUnexpectedGasOrigin);return}const resolve=item.resolve,reject=item.reject;vprCleanupRequest(msg.requestId);if(msg.error)reject(new Error(String(msg.error)));else resolve(msg.result)});
 function callApi(name,args=[],options={}){return new Promise((resolve,reject)=>{let endpoint;try{endpoint=vprGasApiUrl()}catch(e){reject(e);return}const requestId='vpr_'+((window.crypto&&typeof window.crypto.randomUUID==='function')?window.crypto.randomUUID():(Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,14)+'_'+Math.random().toString(36).slice(2,14)));const frame=document.createElement('iframe');frame.name='vprAdminApiFrame_'+requestId;frame.title='Secure Google Apps Script API response';frame.setAttribute('aria-hidden','true');frame.style.cssText='position:fixed;width:1px;height:1px;left:-10000px;bottom:0;border:0;opacity:0;pointer-events:none';const form=document.createElement('form');form.method='POST';form.action=endpoint;form.target=frame.name;form.enctype='application/x-www-form-urlencoded';form.acceptCharset='UTF-8';form.style.display='none';const fields={action:'adminApi',requestId:requestId,origin:location.origin,payload:JSON.stringify({name:name,args:Array.isArray(args)?args:[]})};Object.keys(fields).forEach(key=>{const input=document.createElement('input');input.type='hidden';input.name=key;input.value=String(fields[key]);form.appendChild(input)});const timeoutMs=Number(options.timeoutMs)||30000;const timer=setTimeout(()=>{vprCleanupRequest(requestId);reject(new Error(options.timeoutMessage||(lang==='en'?'The backend did not respond within 30 seconds. Check the GAS deployment and allowed origin.':'Backend không phản hồi trong 30 giây. Hãy kiểm tra deployment GAS và origin được phép.')))},timeoutMs);VPR_PENDING_API.set(requestId,{frame:frame,form:form,resolve:resolve,reject:reject,timer:timer});document.body.appendChild(frame);document.body.appendChild(form);try{form.submit()}catch(e){vprCleanupRequest(requestId);reject(e)}})}
 let vprHealthState='checking',vprHealthFailures=0,vprHealthBusy=false,vprHealthTimer=null,vprHealthLastSuccess=0,vprHealthError='';
 function renderConnectionStatus(){const labelKey={checking:'connectionChecking',online:'connectionOnline',offline:'connectionOffline',retrying:'connectionRetrying'}[vprHealthState]||'connectionChecking';const baseDetail=vprHealthState==='online'?tr('connectionOnlineDetail'):vprHealthState==='checking'?tr('connectionCheckingDetail'):tr('connectionRetryDetail');const stamp=vprHealthLastSuccess?new Date(vprHealthLastSuccess).toLocaleTimeString(lang==='vi'?'vi-VN':'en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'';$$('[data-connection-state]').forEach(el=>{el.dataset.connectionState=vprHealthState;const label=el.querySelector('[data-connection-label]');const detail=el.querySelector('[data-connection-detail]');if(label)label.textContent=tr(labelKey);if(detail){let text=baseDetail;if(vprHealthState==='offline'&&vprHealthError)text=vprHealthError+' · '+tr('connectionRetryDetail');if(vprHealthState==='online'&&stamp)text=tr('connectionCheckedAt')+': '+stamp+' · '+baseDetail;detail.textContent=text}})}
 function vprHealthErrorMessage(error){const message=String(error&&error.message||'');if(/invalid.*url|config\.js/i.test(message))return tr('connectionConfigError');if(/origin is not allowed/i.test(message))return tr('connectionOriginError');if(/did not respond|timeout|timed out|30 seconds/i.test(message))return tr('connectionTimeout');return message?message.slice(0,180):tr('connectionRetryDetail')}
 function scheduleGasHealthCheck(delay){if(vprHealthTimer)clearTimeout(vprHealthTimer);vprHealthTimer=setTimeout(()=>{vprHealthTimer=null;checkGasHealth()},Math.max(0,delay))}
-async function checkGasHealth(){if(vprHealthBusy){scheduleGasHealthCheck(2000);return}if(document.hidden){scheduleGasHealthCheck(15000);return}vprHealthBusy=true;setConnectionHealthState(vprHealthFailures?'offline':'checking');try{const result=await callApi('apiHealthCheck',[],{timeoutMs:9000,timeoutMessage:tr('connectionTimeout')});if(!result||result.ok!==true)throw new Error(result&&result.message||tr('connectionRetryDetail'));vprHealthLastSuccess=Date.now();vprHealthFailures=0;vprHealthError='';setConnectionHealthState('online');scheduleGasHealthCheck(30000)}catch(error){vprHealthFailures++;vprHealthError=vprHealthErrorMessage(error);setConnectionHealthState('offline');const delay=Math.min(30000,Math.round(2500*Math.pow(1.65,Math.min(vprHealthFailures-1,7))));scheduleGasHealthCheck(delay)}finally{vprHealthBusy=false}}
+const VPR_EXPECTED_GAS_API_VERSION='vpr-gas-bridge-2026-10-24-2';
+function probeGasGetHealth(timeoutMs=8000){return new Promise((resolve,reject)=>{let endpoint;try{endpoint=new URL(vprGasApiUrl());endpoint.searchParams.set('action','health');const callback='__vprHealth_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,12);endpoint.searchParams.set('callback',callback);const script=document.createElement('script');let done=false;const timer=setTimeout(()=>finish(new Error('GAS GET health probe timed out.')),timeoutMs);function finish(error,result){if(done)return;done=true;clearTimeout(timer);try{delete window[callback]}catch(_){}script.remove();error?reject(error):resolve(result)}window[callback]=result=>finish(null,result);script.onerror=()=>finish(new Error('GAS GET health endpoint could not be loaded.'));script.src=endpoint.toString();script.async=true;document.head.appendChild(script)}catch(error){reject(error)}})}
+async function checkGasHealth(){
+  if(vprHealthBusy){scheduleGasHealthCheck(2000);return}
+  if(document.hidden){scheduleGasHealthCheck(15000);return}
+  vprHealthBusy=true;
+  vprLastUnexpectedGasOrigin='';
+  setConnectionHealthState(vprHealthFailures?'offline':'checking');
+  try{
+    let bridgeError=null;
+    try{
+      const result=await callApi('apiHealthCheck',[],{timeoutMs:9000,timeoutMessage:tr('connectionTimeout')});
+      if(!result||result.ok!==true)throw new Error(result&&result.message||tr('connectionRetryDetail'));
+      vprHealthLastSuccess=Date.now();vprHealthFailures=0;vprHealthError='';
+      setConnectionHealthState('online');scheduleGasHealthCheck(30000);return;
+    }catch(error){bridgeError=error}
+    vprHealthFailures++;
+    let diagnostic='';
+    try{
+      const probe=await probeGasGetHealth(8000);
+      if(!probe||probe.ok!==true)throw new Error('GAS health endpoint returned an invalid result.');
+      const bridgeMessage=String(bridgeError&&bridgeError.message||'');
+      if(/origin is not allowed/i.test(bridgeMessage)){
+        diagnostic=tr('connectionOriginError');
+      }else if(probe.apiVersion!==VPR_EXPECTED_GAS_API_VERSION){
+        diagnostic=lang==='en'?'GAS responds, but its deployed version is outdated. Update Code.gs and deploy a new version.':'GAS vẫn phản hồi, nhưng phiên bản đang deploy chưa có health version mới. Hãy cập nhật Code.gs và Deploy phiên bản mới.';
+      }else if(vprLastUnexpectedGasOrigin){
+        diagnostic=lang==='en'?'GAS replied from an unrecognized response host ('+vprLastUnexpectedGasOrigin+'). Check the Apps Script response hostname and update the Admin files.':'GAS đã phản hồi từ hostname chưa nhận diện ('+vprLastUnexpectedGasOrigin+'). Hãy kiểm tra hostname phản hồi và cập nhật file Admin.';
+      }else if(probe.spreadsheetStatus&&probe.spreadsheetStatus!=='ready'){
+        diagnostic=lang==='en'?'GAS is reachable, but Google Sheets is not ready ('+probe.spreadsheetStatus+').':'GAS có phản hồi nhưng Google Sheets chưa sẵn sàng ('+probe.spreadsheetStatus+').';
+      }else{
+        diagnostic=lang==='en'?'GAS GET is online, but the Admin POST bridge did not return a message. Check the deployed doPost/HtmlService response and Apps Script execution log.':'GAS GET đang hoạt động nhưng cầu nối POST của Admin chưa trả thông điệp. Kiểm tra doPost/HtmlService response và Apps Script Executions.';
+      }
+    }catch(probeError){
+      const postMessage=String(bridgeError&&bridgeError.message||''),probeMessage=String(probeError&&probeError.message||'');
+      diagnostic=lang==='en'?'Both the Admin POST bridge and GET health probe failed. Check deployment URL/access and the Apps Script execution log. ('+postMessage+'; '+probeMessage+')':'Cả cầu nối POST của Admin và health-check GET đều thất bại. Hãy kiểm tra URL/quyền truy cập deployment và Apps Script Executions. ('+postMessage+'; '+probeMessage+')';
+    }
+    vprHealthError=diagnostic||vprHealthErrorMessage(bridgeError);
+    setConnectionHealthState('offline');
+    const delay=Math.min(30000,Math.round(2500*Math.pow(1.65,Math.min(vprHealthFailures-1,7))));
+    scheduleGasHealthCheck(delay);
+  }finally{vprHealthBusy=false}
+}
 function setConnectionHealthState(state){vprHealthState=state;renderConnectionStatus()}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&(vprHealthState!=='online'||Date.now()-vprHealthLastSuccess>45000))scheduleGasHealthCheck(0)});
 function showError(message){$('#loginError').textContent=message;$('#loginError').hidden=false}
