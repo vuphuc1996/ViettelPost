@@ -2,66 +2,81 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow">
-  <link rel="icon" type="image/png" sizes="64x64" href="/ViettelPost/assets/viettel-v-favicon.png?v=3">
+  <meta name="theme-color" content="#ffffff">
   <title>Admin | Viettel Post Recruitment Desk</title>
-  <script src="/ViettelPost/config.js?v=20261024-5" onerror="window.__VPR_CONFIG_LOAD_ERROR__=true"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="64x64" href="/ViettelPost/assets/viettel-v-favicon.png?v=4">
   <style>
-    :root{color-scheme:light;--red:#df202d;--ink:#242830;--muted:#66707b;--line:#e4e7eb;--paper:#f4f5f7}
-    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;min-height:100%;font:14px/1.6 Arial,Helvetica,sans-serif;color:var(--ink);background:var(--paper)}
-    #adminFrame{position:fixed;z-index:1;inset:0;width:100%;height:100%;border:0;background:#fff;display:none}
-    .state{position:relative;z-index:3;min-height:100vh;display:grid;place-items:center;padding:24px}
-    .card{width:min(620px,100%);background:#fff;border:1px solid var(--line);border-radius:18px;padding:clamp(24px,5vw,42px);box-shadow:0 18px 60px #17202b0d}
-    .brand{display:flex;align-items:center;gap:15px;margin-bottom:25px}.brand-logo{display:block;width:132px;height:51px;object-fit:contain;object-position:left center;flex:none}.brand strong{display:block;font-size:12px;letter-spacing:.04em}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.14em;margin-top:3px}
-    h1{font-size:clamp(24px,4vw,32px);line-height:1.2;letter-spacing:-.035em;margin:0 0 12px}p{color:var(--muted);margin:0 0 17px}code{overflow-wrap:anywhere;background:#f2f3f5;border-radius:5px;padding:2px 5px;font-size:12px}.button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border:0;border-radius:8px;padding:0 17px;background:var(--red);color:#fff;text-decoration:none;font-weight:700;font-size:12px;cursor:pointer}.button.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}.note{font-size:12px;padding:12px 14px;border-radius:8px;background:#fff4e8;color:#7d4b10;margin-top:15px}.loading{display:none;position:fixed;z-index:2;inset:0;background:#f4f5f7;place-items:center;text-align:center;padding:24px}.loading.show{display:grid}.spinner{width:30px;height:30px;border:3px solid #e5e7eb;border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}@keyframes spin{to{transform:rotate(360deg)}}
+    :root { color-scheme: light; font-family: "Be Vietnam Pro", "Noto Sans", Arial, sans-serif; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; min-height: 100%; overflow: hidden; background: #fff; }
+    #adminFrame { display: block; position: fixed; inset: 0; width: 100%; height: 100%; height: 100dvh; border: 0; margin: 0; padding: 0; background: #fff; }
+    #fallback { display: none; position: fixed; z-index: 9; inset: 0; padding: 24px; background: #fff; color: #252a31; font: 14px/1.6 "Be Vietnam Pro", "Noto Sans", Arial, sans-serif; }
+    #fallback .panel { width: min(580px, 100%); margin: min(12vh, 90px) auto 0; padding: 24px; border: 1px solid #e4e7eb; border-radius: 14px; }
+    #fallback h1 { margin: 0 0 12px; font-size: 22px; line-height: 1.4; }
+    #fallback p { color: #626b76; }
+    #fallback a { color: #c91e2b; overflow-wrap: anywhere; }
+    .admin-wrapper-attribution { display: grid; gap: 6px; padding: 15px 0; margin: 16px 0; border-top: 1px solid #eceef0; border-bottom: 1px solid #eceef0; color: #555e68; font-size: 11px; line-height: 1.65; overflow-wrap: anywhere; }
+    .admin-wrapper-attribution strong { color: #292d33; }
+    #fallback button { min-height: 42px; border: 0; border-radius: 8px; padding: 0 16px; background: #df202d; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
   </style>
+  <script src="/ViettelPost/config.js?v=20261024-6" onerror="window.__VPR_CONFIG_LOAD_ERROR__=true"></script>
 </head>
 <body>
-  <main id="setupState" class="state">
-    <section class="card">
-      <div class="brand"><img class="brand-logo" src="/ViettelPost/assets/viettel-post-logo.png?v=3" alt="Viettel Post"><span><strong>RECRUITMENT DESK</strong><small>CAREER PORTAL</small></span></div>
-      <h1>Admin · Quản trị tuyển dụng</h1>
-      <p>Đường dẫn quản trị cố định trên GitHub Pages. Giao diện đăng nhập và xử lý dữ liệu được phục vụ bởi Google Apps Script; dữ liệu vận hành lưu trong Google Sheets.</p>
-      <div id="missingConfig" class="note" hidden>Chưa cấu hình URL Web App của Google Apps Script. Hãy điền <code>GAS_WEB_APP_URL</code> trong file <code>config.js</code>, lưu lại và publish GitHub Pages.</div>
-      <div class="actions"><a class="button secondary" href="/ViettelPost/">← Về trang tuyển dụng</a><a id="retryLink" class="button" href="#" hidden>Thử mở lại</a></div>
-    </section>
-  </main>
-  <div id="loadingState" class="loading" role="status" aria-live="polite"><div><div class="spinner"></div><strong>Đang kết nối hệ thống quản trị…</strong><p>Connecting to the secure admin workspace…</p></div></div>
-  <iframe id="adminFrame" title="Viettel Post Recruitment Admin" allow="clipboard-read; clipboard-write" referrerpolicy="strict-origin" loading="eager"></iframe>
+  <!-- Admin is embedded directly so the address bar remains /ViettelPost/Admin/. -->
+  <iframe id="adminFrame" title="Viettel Post Recruitment Admin" allow="clipboard-read; clipboard-write" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  <section id="fallback" aria-live="polite">
+    <div class="panel">
+      <h1>Không mở được trang quản trị / Admin could not be loaded</h1>
+      <p id="fallbackMessage">Không thể tải giao diện quản trị. Bạn có thể mở trực tiếp Apps Script để kiểm tra deployment.</p>
+      <p><a id="directLink" href="#" rel="noopener">Mở Admin trực tiếp trên Google Apps Script</a></p>
+      <div class="admin-wrapper-attribution"><strong>© Viettel Post Thành phố Hồ Chí Minh</strong><span>Phát triển bởi Vũ Nguyễn Hoàng Phúc · <a href="mailto:Phucvnh@viettel.com.vn">Phucvnh@viettel.com.vn</a></span></div>
+      <button id="retryButton" type="button">Thử lại / Retry</button>
+    </div>
+  </section>
   <script>
-    (function(){
-      'use strict';
-      const cfg=window.VPR_CONFIG||{};
-      const raw=String(cfg.GAS_WEB_APP_URL||'').trim();
-      const setup=document.getElementById('setupState');
-      const missing=document.getElementById('missingConfig');
-      const retry=document.getElementById('retryLink');
-      const frame=document.getElementById('adminFrame');
-      const loading=document.getElementById('loadingState');
-      let loadTimer;
-      function showSetup(){setup.hidden=false;missing.hidden=false;retry.hidden=true;loading.classList.remove('show');frame.style.display='none'}
-      if(!raw){
-        showSetup();
-        missing.textContent = window.__VPR_CONFIG_LOAD_ERROR__
-          ? 'Không tải được file config.js tại /ViettelPost/config.js. Hãy kiểm tra file đã được commit lên nhánh đang publish GitHub Pages, sau đó tải lại trang bằng Ctrl+F5.'
-          : 'Đã tải config.js nhưng GAS_WEB_APP_URL đang trống. Hãy kiểm tra giá trị trong file config.js, commit thay đổi và tải lại trang bằng Ctrl+F5.';
-        missing.hidden=false;
-        return;
-      }
-      let target;
-      try{
-        target=new URL(raw);
-        if(target.protocol!=='https:'||!/script\.google\.com$/.test(target.hostname)||!target.pathname.includes('/macros/s/'))throw new Error('Invalid Apps Script deployment URL');
-        target.searchParams.set('page','admin');
-        target.searchParams.set('embed','github');
-      }catch(_){showSetup();missing.textContent='GAS_WEB_APP_URL chưa đúng định dạng URL Web App HTTPS của Google Apps Script (/macros/s/.../exec).';missing.hidden=false;return}
-      setup.hidden=true;frame.style.display='block';loading.classList.add('show');
-      frame.addEventListener('load',function(){clearTimeout(loadTimer);loading.classList.remove('show')},{once:true});
-      frame.src=target.toString();
-      loadTimer=setTimeout(function(){loading.classList.remove('show');retry.hidden=false;setup.hidden=false;missing.hidden=false;missing.textContent='Trang quản trị đang tải lâu hơn dự kiến. Hãy kiểm tra deployment GAS có quyền truy cập phù hợp, URL /exec còn hiệu lực và phiên bản mới nhất đã được deploy.';},18000);
-      retry.addEventListener('click',function(e){e.preventDefault();location.reload()});
-    })();
+  (function () {
+    'use strict';
+    // Fallback keeps the Admin route usable if GitHub Pages has a stale/missing config.js.
+    const FALLBACK_GAS_URL = 'https://script.google.com/macros/s/AKfycbzOP1YDX3XPpxgUvgG3GPD3dlkZSJ4a8lTdNrzfaDF0QKYd2NK74GjjLwvNaYnr72WG/exec';
+    const frame = document.getElementById('adminFrame');
+    const fallback = document.getElementById('fallback');
+    const fallbackMessage = document.getElementById('fallbackMessage');
+    const directLink = document.getElementById('directLink');
+    const configUrl = String((window.VPR_CONFIG && window.VPR_CONFIG.GAS_WEB_APP_URL) || '').trim();
+
+    function validGasUrl(value) {
+      try {
+        const u = new URL(value);
+        return u.protocol === 'https:' && u.hostname === 'script.google.com' && u.pathname.includes('/macros/s/') && u.pathname.endsWith('/exec');
+      } catch (_) { return false; }
+    }
+    function buildAdminUrl(value) {
+      const u = new URL(value);
+      u.searchParams.set('page', 'admin');
+      u.searchParams.set('embed', 'github');
+      return u.toString();
+    }
+    const gasUrl = validGasUrl(configUrl) ? configUrl : FALLBACK_GAS_URL;
+    const adminUrl = buildAdminUrl(gasUrl);
+    directLink.href = buildAdminUrl(gasUrl).replace(/[?&]embed=github/, '');
+    if (window.__VPR_CONFIG_LOAD_ERROR__ || !validGasUrl(configUrl)) {
+      // Do not block login just because config.js failed. Continue with the known deployment URL.
+      fallbackMessage.textContent = 'Đang dùng URL GAS dự phòng vì chưa đọc được config.js. Nếu màn hình đăng nhập vẫn không xuất hiện, hãy cập nhật deployment GAS (New version) để cho phép nhúng trang Admin. / Using the built-in GAS URL because config.js could not be read.';
+    }
+    frame.addEventListener('error', function () {
+      fallback.style.display = 'block';
+    });
+    document.getElementById('retryButton').addEventListener('click', function () {
+      fallback.style.display = 'none';
+      frame.src = adminUrl + (adminUrl.includes('?') ? '&' : '?') + '_reload=' + Date.now();
+    });
+    frame.src = adminUrl;
+  })();
   </script>
 </body>
 </html>
