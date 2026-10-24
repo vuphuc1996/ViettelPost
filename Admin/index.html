@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" type="image/png" sizes="64x64" href="../assets/viettel-v-favicon.png?v=2">
+  <title>Admin | Viettel Post Recruitment Desk</title>
+  <script src="../config.js"></script>
+  <style>
+    :root{color-scheme:light;--red:#df202d;--ink:#242830;--muted:#66707b;--line:#e4e7eb;--paper:#f4f5f7}
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;min-height:100%;font:14px/1.6 Arial,Helvetica,sans-serif;color:var(--ink);background:var(--paper)}
+    #adminFrame{position:fixed;z-index:1;inset:0;width:100%;height:100%;border:0;background:#fff;display:none}
+    .state{position:relative;z-index:3;min-height:100vh;display:grid;place-items:center;padding:24px}
+    .card{width:min(620px,100%);background:#fff;border:1px solid var(--line);border-radius:18px;padding:clamp(24px,5vw,42px);box-shadow:0 18px 60px #17202b0d}
+    .brand{display:flex;align-items:center;gap:15px;margin-bottom:25px}.brand-logo{display:block;width:132px;height:51px;object-fit:contain;object-position:left center;flex:none}.brand strong{display:block;font-size:12px;letter-spacing:.04em}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.14em;margin-top:3px}
+    h1{font-size:clamp(24px,4vw,32px);line-height:1.2;letter-spacing:-.035em;margin:0 0 12px}p{color:var(--muted);margin:0 0 17px}code{overflow-wrap:anywhere;background:#f2f3f5;border-radius:5px;padding:2px 5px;font-size:12px}.button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border:0;border-radius:8px;padding:0 17px;background:var(--red);color:#fff;text-decoration:none;font-weight:700;font-size:12px;cursor:pointer}.button.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}.note{font-size:12px;padding:12px 14px;border-radius:8px;background:#fff4e8;color:#7d4b10;margin-top:15px}.loading{display:none;position:fixed;z-index:2;inset:0;background:#f4f5f7;place-items:center;text-align:center;padding:24px}.loading.show{display:grid}.spinner{width:30px;height:30px;border:3px solid #e5e7eb;border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}@keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <main id="setupState" class="state">
+    <section class="card">
+      <div class="brand"><img class="brand-logo" src="../assets/viettel-post-logo.png?v=2" alt="Viettel Post"><span><strong>RECRUITMENT DESK</strong><small>CAREER PORTAL</small></span></div>
+      <h1>Admin · Quản trị tuyển dụng</h1>
+      <p>Đường dẫn quản trị cố định trên GitHub Pages. Giao diện đăng nhập và xử lý dữ liệu được phục vụ bởi Google Apps Script; dữ liệu vận hành lưu trong Google Sheets.</p>
+      <div id="missingConfig" class="note" hidden>Chưa cấu hình URL Web App của Google Apps Script. Hãy điền <code>GAS_WEB_APP_URL</code> trong file <code>config.js</code>, lưu lại và publish GitHub Pages.</div>
+      <div class="actions"><a class="button secondary" href="../">← Về trang tuyển dụng</a><a id="retryLink" class="button" href="#" hidden>Thử mở lại</a></div>
+    </section>
+  </main>
+  <div id="loadingState" class="loading" role="status" aria-live="polite"><div><div class="spinner"></div><strong>Đang kết nối hệ thống quản trị…</strong><p>Connecting to the secure admin workspace…</p></div></div>
+  <iframe id="adminFrame" title="Viettel Post Recruitment Admin" allow="clipboard-read; clipboard-write" referrerpolicy="strict-origin" loading="eager"></iframe>
+  <script>
+    (function(){
+      'use strict';
+      const cfg=window.VPR_CONFIG||{};
+      const raw=String(cfg.GAS_WEB_APP_URL||'').trim();
+      const setup=document.getElementById('setupState');
+      const missing=document.getElementById('missingConfig');
+      const retry=document.getElementById('retryLink');
+      const frame=document.getElementById('adminFrame');
+      const loading=document.getElementById('loadingState');
+      let loadTimer;
+      function showSetup(){setup.hidden=false;missing.hidden=false;retry.hidden=true;loading.classList.remove('show');frame.style.display='none'}
+      if(!raw){showSetup();return}
+      let target;
+      try{
+        target=new URL(raw);
+        if(target.protocol!=='https:'||!/script\.google\.com$/.test(target.hostname)||!target.pathname.includes('/macros/s/'))throw new Error('Invalid Apps Script deployment URL');
+        target.searchParams.set('page','admin');
+        target.searchParams.set('embed','github');
+      }catch(_){showSetup();missing.textContent='GAS_WEB_APP_URL chưa đúng định dạng URL Web App HTTPS của Google Apps Script (/macros/s/.../exec).';missing.hidden=false;return}
+      setup.hidden=true;frame.style.display='block';loading.classList.add('show');
+      frame.addEventListener('load',function(){clearTimeout(loadTimer);loading.classList.remove('show')},{once:true});
+      frame.src=target.toString();
+      loadTimer=setTimeout(function(){loading.classList.remove('show');retry.hidden=false;setup.hidden=false;missing.hidden=false;missing.textContent='Trang quản trị đang tải lâu hơn dự kiến. Hãy kiểm tra deployment GAS có quyền truy cập phù hợp, URL /exec còn hiệu lực và phiên bản mới nhất đã được deploy.';},18000);
+      retry.addEventListener('click',function(e){e.preventDefault();location.reload()});
+    })();
+  </script>
+</body>
+</html>
