@@ -82,3 +82,13 @@ body, button, input, select, textarea { font-synthesis: none; }
 @media(max-width:650px){.site-footer-premium .footer-compact{grid-template-columns:minmax(0,1fr);gap:13px;padding-top:18px;padding-bottom:17px}.site-footer-premium .footer-compact .brand-footer{grid-column:1;grid-row:1}.site-footer-premium .footer-compact>p{grid-column:1;grid-row:2;font-size:10px}.site-footer-premium .footer-compact>#adminLink{grid-column:1;grid-row:3;justify-self:start;min-height:40px}.site-footer-premium .footer-compact-meta{grid-template-columns:minmax(0,1fr);gap:13px;padding-top:14px;padding-bottom:17px}.site-footer-premium .footer-compact-developer{justify-content:flex-start;gap:10px}.footer-developer-name{min-width:140px}.site-footer-premium .footer-email{max-width:100%}}
 @media(max-width:360px){.site-footer-premium .brand-footer img{width:98px;height:35px}.site-footer-premium .footer-compact-developer{align-items:flex-start;flex-direction:column}.footer-developer-name{min-width:0}}
 
+
+/* PDF CV upload and extraction help — matched to existing application form style. */
+#applyCvFile{padding:9px 10px;background:#fff;border:1px dashed #d8dce1;border-radius:8px;min-height:44px;width:100%;font-size:11px;color:#505761}
+.cv-help{display:block;margin-top:7px;color:#818892;font-size:10px;line-height:1.6;font-weight:400}
+.cv-help[data-state="working"]{color:#8a5a0a}
+.cv-help[data-state="done"]{color:#16764d}
+.cv-help[data-state="warning"]{color:#9a5b11}
+
+/* Recruitment stage: Offer */
+.badge.OFFER{background:#fff4dc;color:#8a5600;border-color:#f3dfb1}

@@ -1,4 +1,6 @@
-/* Public configuration: paste the deployed Google Apps Script Web App URL into GAS_WEB_APP_URL. */
+/* Public settings only. Keep this file safe for public View Source. */
 window.VPR_CONFIG = {
-  GAS_WEB_APP_URL: "https://script.google.com/macros/s/AKfycbzOP1YDX3XPpxgUvgG3GPD3dlkZSJ4a8lTdNrzfaDF0QKYd2NK74GjjLwvNaYnr72WG/exec"
+  // Set after deploying the Cloudflare Worker, e.g. https://viettelpost-recruitment-api.<account>.workers.dev
+  WORKER_API_URL: "https://REPLACE-WITH-YOUR-WORKER-URL.workers.dev",
+  MAX_CV_BYTES: 10485760
 };
