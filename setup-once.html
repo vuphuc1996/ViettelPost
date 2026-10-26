@@ -6,7 +6,7 @@
 <label for="worker">URL Cloudflare Worker</label><input id="worker" placeholder="https://viettelpost-recruitment-api.<subdomain>.workers.dev" autocomplete="url">
 <label for="key">SETUP_KEY</label><input id="key" type="password" autocomplete="off">
 <label for="username">Tài khoản Admin đầu tiên</label><input id="username" autocomplete="off" maxlength="80">
-<label for="password">Mật khẩu Admin (ít nhất 12 ký tự)</label><input id="password" type="password" autocomplete="new-password">
+<label for="password">Mật khẩu Admin (ít nhất 8 ký tự)</label><input id="password" type="password" autocomplete="new-password">
 <button id="submit">Khởi tạo Sheets và Admin</button><pre id="result">Chưa thực hiện.</pre>
 <p>Trang này không lưu thông tin vào localStorage và không nhúng setup key trong mã nguồn. Chỉ gửi thông tin trực tiếp đến Worker URL bạn nhập.</p></main>
 <script>
@@ -19,7 +19,7 @@
     const adminPassword = $('password').value;
     const result = $('result');
     if (!/^https:\/\//i.test(worker)) { result.textContent = 'Lỗi: URL Worker phải bắt đầu bằng https://'; return; }
-    if (!key || !adminUsername || adminPassword.length < 12) { result.textContent = 'Lỗi: nhập setup key, username và mật khẩu ít nhất 12 ký tự.'; return; }
+    if (!key || !adminUsername || adminPassword.length < 8) { result.textContent = 'Lỗi: nhập setup key, username và mật khẩu ít nhất 8 ký tự.'; return; }
     if (!confirm('Chỉ tiếp tục nếu đây là Worker của bạn và các Google secrets đã được cấu hình. Khởi tạo có thể tạo tab trong Spreadsheet đã cấu hình. Tiếp tục?')) return;
     $('submit').disabled = true; result.textContent = 'Đang gọi endpoint khởi tạo…';
     try {
