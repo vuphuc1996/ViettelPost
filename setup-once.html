@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VPR — Khởi tạo một lần</title>
+<style>body{font-family:Inter,"Segoe UI",Arial,sans-serif;max-width:720px;margin:32px auto;padding:0 18px;color:#16243a;background:#f5f7fb}main{background:white;border:1px solid #dbe2ec;border-radius:16px;padding:24px;box-shadow:0 8px 30px #16243a12}h1{font-size:24px}p{line-height:1.6;color:#536176}label{display:block;font-weight:600;margin:16px 0 6px}input{box-sizing:border-box;width:100%;padding:11px 12px;border:1px solid #c8d2e0;border-radius:8px;font:inherit}button{margin-top:18px;background:#a6192e;color:white;border:0;padding:12px 18px;border-radius:9px;font-weight:700;cursor:pointer}button:disabled{opacity:.5}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#101a2b;color:#e9f0fc;border-radius:10px;padding:14px;min-height:40px}.warn{background:#fff4db;padding:12px;border-radius:8px;color:#704d04}</style></head>
+<body><main><h1>Viettel Post Recruitment — Khởi tạo hệ thống một lần</h1>
+<p class="warn"><b>Công cụ quản trị tạm thời.</b> Chỉ mở sau khi đã cấu hình OAuth/Google secrets trong Cloudflare. Sau khi khởi tạo thành công, xóa trang này khỏi GitHub Pages và xóa Secret SETUP_KEY. Không chia sẻ đường dẫn hoặc setup key.</p>
+<label for="worker">URL Cloudflare Worker</label><input id="worker" placeholder="https://viettelpost-recruitment-api.<subdomain>.workers.dev" autocomplete="url">
+<label for="key">SETUP_KEY</label><input id="key" type="password" autocomplete="off">
+<label for="username">Tài khoản Admin đầu tiên</label><input id="username" autocomplete="off" maxlength="80">
+<label for="password">Mật khẩu Admin (ít nhất 12 ký tự)</label><input id="password" type="password" autocomplete="new-password">
+<button id="submit">Khởi tạo Sheets và Admin</button><pre id="result">Chưa thực hiện.</pre>
+<p>Trang này không lưu thông tin vào localStorage và không nhúng setup key trong mã nguồn. Chỉ gửi thông tin trực tiếp đến Worker URL bạn nhập.</p></main>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  $('submit').addEventListener('click', async () => {
+    const worker = $('worker').value.trim().replace(/\/$/, '');
+    const key = $('key').value;
+    const adminUsername = $('username').value.trim();
+    const adminPassword = $('password').value;
+    const result = $('result');
+    if (!/^https:\/\//i.test(worker)) { result.textContent = 'Lỗi: URL Worker phải bắt đầu bằng https://'; return; }
+    if (!key || !adminUsername || adminPassword.length < 12) { result.textContent = 'Lỗi: nhập setup key, username và mật khẩu ít nhất 12 ký tự.'; return; }
+    if (!confirm('Chỉ tiếp tục nếu đây là Worker của bạn và các Google secrets đã được cấu hình. Khởi tạo có thể tạo tab trong Spreadsheet đã cấu hình. Tiếp tục?')) return;
+    $('submit').disabled = true; result.textContent = 'Đang gọi endpoint khởi tạo…';
+    try {
+      const response = await fetch(worker + '/api/setup/initialize', {
+        method: 'POST', headers: {'Content-Type':'application/json','X-Setup-Key':key},
+        body: JSON.stringify({adminUsername, adminPassword})
+      });
+      const body = await response.json().catch(() => ({ok:false,message:'Worker không trả JSON hợp lệ.'}));
+      result.textContent = 'HTTP ' + response.status + '\n' + JSON.stringify(body, null, 2);
+      if (response.ok && body.ok) { $('key').value = ''; $('password').value = ''; }
+    } catch (e) {
+      result.textContent = 'Không gọi được Worker. Kiểm tra Worker URL, CORS/ALLOWED_ORIGINS và cấu hình secrets. Chi tiết: ' + (e && e.message ? e.message : String(e));
+    } finally { $('submit').disabled = false; }
+  });
+})();
+</script></body></html>
